@@ -54,11 +54,21 @@ class SleepTrackerFragment : Fragment() {
 
         val viewModelFactory = SleepTrackerViewModelFactory(dataSource, application)
 
-        val sleepTrackerModel = ViewModelProvider(this, viewModelFactory).get(SleepTrackerViewModel::class.java)
+        val sleepTrackerModel = ViewModelProvider(this, viewModelFactory)[SleepTrackerViewModel::class.java]
 
         binding.sleepTrackerViewModel = sleepTrackerModel
 
         binding.lifecycleOwner = this
+
+        val adapter = SleepNightAdapter()
+        binding.sleepList.adapter = adapter
+
+        sleepTrackerModel.nights.observe(viewLifecycleOwner){
+            it?.let {
+                adapter.submitList(it)
+            }
+
+        }
 
         //WE NEED TO WRAP THIS IN A LET BLOCK WITH A NULL CHECK BECAUSE DONENAVIGATING() WILL TRIGGER OBSERVER AGAIN AND IF ITS NULL IT WONT EXECUTE AGAIN
         sleepTrackerModel.navigateToSleepQuality.observe(viewLifecycleOwner) {

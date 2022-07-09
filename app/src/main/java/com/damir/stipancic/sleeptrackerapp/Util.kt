@@ -20,12 +20,19 @@ import android.annotation.SuppressLint
 import android.content.res.Resources
 import android.text.Html
 import android.text.Spanned
+import android.widget.TextView
+import androidx.recyclerview.widget.RecyclerView
 import com.damir.stipancic.sleeptrackerapp.database.SleepNight
 import java.text.SimpleDateFormat
+import java.util.*
+import java.util.concurrent.TimeUnit
 
 /**
  * These functions create a formatted string that can be set in a TextView.
  */
+
+private val ONE_MINUTE_MILLIS = TimeUnit.MILLISECONDS.convert(1, TimeUnit.MINUTES)
+private val ONE_HOUR_MILLIS = TimeUnit.MILLISECONDS.convert(1, TimeUnit.HOURS)
 
 /**
  * Returns a string representing the numeric quality rating.
@@ -96,4 +103,23 @@ fun formatNights(nights: List<SleepNight>, resources: Resources): Spanned {
         }
     }
     return Html.fromHtml(sb.toString(), Html.FROM_HTML_MODE_LEGACY)
+}
+
+fun convertDurationToFormatted(startTimeMilli: Long, endTimeMilli: Long, res: Resources): String {
+    val durationMilli = endTimeMilli - startTimeMilli
+    val weekdayString = SimpleDateFormat("EEEE", Locale.getDefault()).format(startTimeMilli)
+    return when {
+        durationMilli < ONE_MINUTE_MILLIS -> {
+            val seconds = TimeUnit.SECONDS.convert(durationMilli, TimeUnit.MILLISECONDS)
+            res.getString(R.string.seconds_length, seconds, weekdayString)
+        }
+        durationMilli < ONE_HOUR_MILLIS -> {
+            val minutes = TimeUnit.MINUTES.convert(durationMilli, TimeUnit.MILLISECONDS)
+            res.getString(R.string.minutes_length, minutes, weekdayString)
+        }
+        else -> {
+            val hours = TimeUnit.HOURS.convert(durationMilli, TimeUnit.MILLISECONDS)
+            res.getString(R.string.hours_length, hours, weekdayString)
+        }
+    }
 }
