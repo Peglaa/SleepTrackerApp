@@ -20,10 +20,12 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.GridLayoutManager
 import com.damir.stipancic.sleeptrackerapp.R
 import com.damir.stipancic.sleeptrackerapp.database.SleepDatabase
 import com.damir.stipancic.sleeptrackerapp.databinding.FragmentSleepTrackerBinding
@@ -60,7 +62,12 @@ class SleepTrackerFragment : Fragment() {
 
         binding.lifecycleOwner = this
 
-        val adapter = SleepNightAdapter()
+        val adapter = SleepNightAdapter(SleepNightListener {
+            nightId -> sleepTrackerModel.onSleepNightClicked(nightId)
+        })
+
+        val manager = GridLayoutManager(activity, 3)
+        binding.sleepList.layoutManager = manager
         binding.sleepList.adapter = adapter
 
         sleepTrackerModel.nights.observe(viewLifecycleOwner){
@@ -76,6 +83,14 @@ class SleepTrackerFragment : Fragment() {
                 val navAction = SleepTrackerFragmentDirections.actionSleepTrackerFragmentToSleepQualityFragment(it.nightId)
                 findNavController().navigate(navAction)
                 sleepTrackerModel.doneNavigating()
+            }
+        }
+
+        sleepTrackerModel.navigateToSleepDataQuality.observe(viewLifecycleOwner){
+            it?.let {
+                this.findNavController().navigate(
+                    SleepTrackerFragmentDirections.actionSleepTrackerFragmentToSleepDetailFragment(it))
+                sleepTrackerModel.onSleepDataQualityNavigated()
             }
         }
 

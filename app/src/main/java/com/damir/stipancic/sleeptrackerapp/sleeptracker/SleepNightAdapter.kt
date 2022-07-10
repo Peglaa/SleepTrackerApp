@@ -5,26 +5,24 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.damir.stipancic.sleeptrackerapp.R
-import com.damir.stipancic.sleeptrackerapp.convertDurationToFormatted
-import com.damir.stipancic.sleeptrackerapp.convertNumericQualityToString
 import com.damir.stipancic.sleeptrackerapp.database.SleepNight
 import com.damir.stipancic.sleeptrackerapp.databinding.ListItemSleepNightBinding
 
-class SleepNightAdapter: ListAdapter<SleepNight, SleepNightAdapter.SleepNightViewHolder>(SleepNightDiffCallback()){
+class SleepNightAdapter(val clickListener : SleepNightListener): ListAdapter<SleepNight, SleepNightAdapter.SleepNightViewHolder>(SleepNightDiffCallback()){
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SleepNightViewHolder {
         return SleepNightViewHolder.from(parent)
     }
 
     override fun onBindViewHolder(holder: SleepNightViewHolder, position: Int) {
-        holder.bind(getItem(position))
+        holder.bind(getItem(position), clickListener)
     }
 
     class SleepNightViewHolder private constructor(val binding: ListItemSleepNightBinding) : RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(item: SleepNight) {
+        fun bind(item: SleepNight, clickListener: SleepNightListener) {
             binding.sleep = item
+            binding.clickListener = clickListener
             binding.executePendingBindings()
         }
 
@@ -35,17 +33,19 @@ class SleepNightAdapter: ListAdapter<SleepNight, SleepNightAdapter.SleepNightVie
                 return SleepNightViewHolder(binding)
             }
         }
+    }
+}
 
+class SleepNightDiffCallback : DiffUtil.ItemCallback<SleepNight>() {
+    override fun areItemsTheSame(oldItem: SleepNight, newItem: SleepNight): Boolean {
+        return oldItem.nightId == newItem.nightId
     }
 
-    class SleepNightDiffCallback : DiffUtil.ItemCallback<SleepNight>() {
-        override fun areItemsTheSame(oldItem: SleepNight, newItem: SleepNight): Boolean {
-            return oldItem.nightId == newItem.nightId
-        }
-
-        override fun areContentsTheSame(oldItem: SleepNight, newItem: SleepNight): Boolean {
-            return oldItem == newItem
-        }
+    override fun areContentsTheSame(oldItem: SleepNight, newItem: SleepNight): Boolean {
+        return oldItem == newItem
     }
+}
 
+class SleepNightListener(val clickListener: (sleepId : Long) -> Unit){
+    fun onClick(night: SleepNight) = clickListener(night.nightId)
 }
